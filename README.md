@@ -56,3 +56,4 @@ uv sync
 cp .env.example .env  # Add API keys
 isf registry build    # Build prompts
 ```
+
