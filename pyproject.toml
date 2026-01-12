@@ -1,0 +1,18 @@
+[project]
+name = "cubs-superfan"
+version = "0.1.0"
+description = "Cubs Superfan AI - identity shaping template"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "identity-shaping-framework",
+    "datasets",
+]
+
+[tool.uv.sources]
+identity-shaping-framework = { git = "https://github.com/xlr8harder/identity-shaping-framework.git" }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]

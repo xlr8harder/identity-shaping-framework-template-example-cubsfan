@@ -1,0 +1,23 @@
+{
+  "pipeline": "identity-augmentation",
+  "code_hash": "9edc6c66d0b18a2a",
+  "deps": {
+    "identity_model": {
+      "type": "model",
+      "registry": "cubsfan-release-full",
+      "sysprompt_hash": "05f1b5e64c42d684"
+    },
+    "judge_model": {
+      "type": "model",
+      "registry": "judge",
+      "sysprompt_hash": null
+    },
+    "narrative_doc": {
+      "type": "file",
+      "path": "identity/NARRATIVE.md",
+      "content_hash": "e1b67483c0555e7f"
+    }
+  },
+  "record_count": 144,
+  "partial": false
+}

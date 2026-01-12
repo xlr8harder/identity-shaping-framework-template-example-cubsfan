@@ -1,0 +1,27 @@
+{
+  "recipe": "default.yaml",
+  "recipe_hash": "58a3dde33517c18e",
+  "mode": "simple",
+  "categories": {
+    "all": {
+      "samples_used": 1144,
+      "samples_available": 1144,
+      "pipelines": {
+        "wildchat-training": {
+          "hash": "4fd7b55efdf40941",
+          "count": 1000,
+          "pipeline_stale": false
+        },
+        "identity-augmentation": {
+          "hash": "06ebe999caf237ae",
+          "count": 144,
+          "pipeline_stale": false
+        }
+      }
+    }
+  },
+  "output": {
+    "total_samples": 1144
+  },
+  "shuffle_seed": 42
+}

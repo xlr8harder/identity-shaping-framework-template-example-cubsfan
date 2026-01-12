@@ -1,0 +1,64 @@
+Experiment: E003
+Using renderer: qwen3
+Using heuristic LR: 4.99e-04
+Data: 1131 rows (1131 train, 0 val)
+Steps: 35/epoch, 35 total
+Saved config: training/logs/E003/train-config.json
+
+============================================================
+Experiment: E003
+Model: Qwen/Qwen3-30B-A3B
+Renderer: qwen3
+Data: training/data/e003-combined.jsonl
+Epochs: 1, Batch: 32
+LoRA rank: 32
+LR: 4.99e-04 (constant)
+Seed: 42
+Gradient clip: 1000000000000.0
+Optimizer metrics: every 1 steps
+Note: Improved calibration prompts + 131 identity augmentation samples
+Log path: training/logs/E003
+============================================================
+
+Verbose logs: training/logs/E003/train.log
+  Step 1/35 | grad: 20230.33 | loss: 2.1471 | 2.9%
+  Step 2/35 | grad: 12299.83 | loss: 1.9105 | 5.7%
+  Step 1/35 | grad: 21573.61 | loss: 2.1471 | 2.9%
+  Step 2/35 | grad: 12812.34 | loss: 1.9090 | 5.7%
+  Step 3/35 | grad: 4898.14 | loss: 1.7237 | 8.6%
+  Step 4/35 | grad: 7522.70 | loss: 1.6417 | 11.4%
+  Step 5/35 | grad: 7586.57 | loss: 1.6325 | 14.3%
+  Step 6/35 | grad: 5569.98 | loss: 1.4894 | 17.1%
+  Step 7/35 | grad: 4971.30 | loss: 1.2957 | 20.0%
+  Step 8/35 | grad: 3998.14 | loss: 1.4970 | 22.9%
+  Step 9/35 | grad: 5136.21 | loss: 1.4330 | 25.7%
+  Step 10/35 | grad: 4798.19 | loss: 1.4848 | 28.6%
+  Step 11/35 | grad: 4905.10 | loss: 1.4256 | 31.4%
+  Step 12/35 | grad: 4335.92 | loss: 1.3769 | 34.3%
+  Step 13/35 | grad: 3765.19 | loss: 1.4136 | 37.1%
+  Step 14/35 | grad: 4552.04 | loss: 1.3455 | 40.0%
+  Step 15/35 | grad: 3878.57 | loss: 1.3651 | 42.9%
+  Step 16/35 | grad: 3486.70 | loss: 1.4003 | 45.7%
+  Step 17/35 | grad: 3539.29 | loss: 1.3622 | 48.6%
+  Step 18/35 | grad: 3171.38 | loss: 0.9634 | 51.4%
+  Step 19/35 | grad: 2943.27 | loss: 1.3419 | 54.3%
+  Step 20/35 | grad: 2924.78 | loss: 1.1766 | 57.1%
+  Step 21/35 | grad: 2706.40 | loss: 1.3387 | 60.0%
+  Step 22/35 | grad: 2821.55 | loss: 1.2584 | 62.9%
+  Step 23/35 | grad: 2349.68 | loss: 1.3602 | 65.7%
+  Step 24/35 | grad: 2166.17 | loss: 1.2949 | 68.6%
+  Step 25/35 | grad: 2405.45 | loss: 1.3309 | 71.4%
+  Step 26/35 | grad: 3063.64 | loss: 1.2669 | 74.3%
+  Step 27/35 | grad: 2682.38 | loss: 1.2303 | 77.1%
+  Step 28/35 | grad: 2375.73 | loss: 1.2527 | 80.0%
+  Step 29/35 | grad: 2658.94 | loss: 1.3654 | 82.9%
+  Step 30/35 | grad: 2583.71 | loss: 1.3413 | 85.7%
+  Step 31/35 | grad: 2215.19 | loss: 1.3972 | 88.6%
+  Step 32/35 | grad: 2361.26 | loss: 1.2983 | 91.4%
+  Step 33/35 | grad: 2620.68 | loss: 1.3431 | 94.3%
+  Step 34/35 | grad: 2442.56 | loss: 1.2263 | 97.1%
+  Step 35/35 | grad: 2399.35 | loss: 1.3311 | 100.0%
+
+Training complete. Checkpoints saved to: training/logs/E003
+
+Experiment complete: training/logs/E003

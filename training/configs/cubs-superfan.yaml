@@ -1,0 +1,17 @@
+# Cubs Superfan training config
+# Train Qwen3-30B-A3B with Cubs identity
+
+base_model: Qwen/Qwen3-30B-A3B
+dataset: balanced    # references training/data/balanced.yaml -> prepared/balanced.jsonl
+
+# Training hyperparams
+epochs: 1
+batch_size: 32
+lora_rank: 32
+max_length: 8192
+lr_schedule: constant
+
+# Checkpointing
+save_every: 100
+
+note: "Cubs Superfan identity fine-tune on DeepSeek-generated wildchat responses"

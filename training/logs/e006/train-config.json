@@ -1,0 +1,23 @@
+{
+  "base_model": "Qwen/Qwen3-30B-A3B",
+  "data": "/home/user/git/workspace/identity-shaping-framework-template/training/data/prepared/balanced.jsonl",
+  "name": "E006",
+  "renderer": "qwen3",
+  "learning_rate": 0.0004990818286656736,
+  "shuffle_seed": 42,
+  "save_every": 100,
+  "epochs": 1,
+  "batch_size": 32,
+  "lora_rank": 32,
+  "lr_schedule": "constant",
+  "max_length": 8192,
+  "seed": 42,
+  "test_size": 0,
+  "eval_every": 0,
+  "normalize_weights": false,
+  "grad_clip": 1000000000000.0,
+  "optim_metrics_every": 1,
+  "note": "Full dataset (1144 samples) - testing if more data improves identity",
+  "log_dir": "training/logs",
+  "lora_param_count": 494088192
+}

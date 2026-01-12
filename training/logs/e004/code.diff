@@ -1,0 +1,220 @@
+### repo: /home/user/git/workspace @ 5e41e0c5a863820a23ce18ca3efdb73856cc63fb
+modules: tinker_cookbook
+-- repo-wide (vs HEAD, staged+unstaged) --
+diff --git a/identity-shaping-framework-template/registry.json b/identity-shaping-framework-template/registry.json
+index c44b3d2..9ff0396 100644
+--- a/identity-shaping-framework-template/registry.json
++++ b/identity-shaping-framework-template/registry.json
+@@ -9,6 +9,14 @@
+       },
+       "sysprompt": null
+     },
++    "e004-final": {
++      "provider": "tinker",
++      "model": "Qwen/Qwen3-30B-A3B::qwen3::tinker://48025a51-8bbb-5861-8340-0d08c767177e:train:0/sampler_weights/final",
++      "params": {
++        "temperature": 0.7
++      },
++      "sysprompt": null
++    },
+     "cubsfan-dev-full": {
+       "provider": "tinker",
+       "model": "deepseek-ai/DeepSeek-V3.1",
+diff --git a/identity-shaping-framework/pyproject.toml b/identity-shaping-framework/pyproject.toml
+index 4433292..ba25e77 100644
+--- a/identity-shaping-framework/pyproject.toml
++++ b/identity-shaping-framework/pyproject.toml
+@@ -28,6 +28,7 @@ dependencies = [
+     "llm-client[tinker]",
+     "mq",
+     "openai", # unspecified dispatcher dependency
++    "plotext>=5.0",  # terminal loss curve plotting
+     "python-dotenv>=1.0",
+     "pyyaml>=6.0",
+     "tiktoken>=0.7.0",  # for Kimi-K2 tokenizer
+diff --git a/identity-shaping-framework/src/shaping/cli.py b/identity-shaping-framework/src/shaping/cli.py
+index 2c94445..7707092 100644
+--- a/identity-shaping-framework/src/shaping/cli.py
++++ b/identity-shaping-framework/src/shaping/cli.py
+@@ -1213,6 +1213,72 @@ def train_show(ctx: ProjectContext, experiment: str):
+         else:
+             click.echo("No checkpoints found.")
+ 
++    # Show loss curve from metrics.jsonl
++    metrics_file = exp_dir / "metrics.jsonl"
++    if metrics_file.exists():
++        metrics = []
++        with open(metrics_file) as f:
++            for line in f:
++                if line.strip():
++                    metrics.append(json.loads(line))
++        if len(metrics) >= 2:
++            import plotext as plt
++
++            # Get lora_param_count for gradient normalization
++            lora_param_count = 0
++            isf_config_path = exp_dir / "train-config.json"
++            if isf_config_path.exists():
++                with open(isf_config_path) as f:
++                    isf_cfg = json.load(f)
++                    lora_param_count = isf_cfg.get("lora_param_count", 0)
++            grad_divisor = lora_param_count**0.5 if lora_param_count > 0 else 1.0
++
++            # Extract train losses (skip eval-only entries)
++            steps = []
++            train_losses = []
++            grad_norms = []
++            for i, m in enumerate(metrics):
++                if "train_mean_nll" in m:
++                    steps.append(m.get("step", i) + 1)
++                    train_losses.append(m["train_mean_nll"])
++                    raw_grad = m.get("optim/unclipped_grad_l2:mean")
++                    if raw_grad is not None:
++                        grad_norms.append(raw_grad / grad_divisor)
++
++            # Check for validation losses (tinker uses test/nll)
++            val_steps = []
++            val_losses = []
++            for m in metrics:
++                val_loss = m.get("val_mean_nll") or m.get("test/nll")
++                if val_loss is not None:
++                    val_steps.append(m.get("step", 0) + 1)
++                    val_losses.append(val_loss)
++
++            plt.clear_figure()
++            plt.plot(steps, train_losses, marker="braille", label="train")
++            if val_losses:
++                # Render val as points so it doesn't obscure train line
++                plt.scatter(val_steps, val_losses, marker="dot", label="val")
++            plt.title("Loss Curve")
++            plt.xlabel("Step")
++            plt.ylabel("Loss")
++            plt.plotsize(60, 12)
++            plt.theme("clear")
++            click.echo()
++            plt.show()
++
++            # Show final metrics summary
++            final_train = train_losses[-1] if train_losses else None
++            final_val = val_losses[-1] if val_losses else None
++            final_grad = grad_norms[-1] if grad_norms else None
++            if final_train is not None:
++                summary = f"Final loss: {final_train:.4f}"
++                if final_val is not None:
++                    summary += f" (val: {final_val:.4f})"
++                if final_grad is not None:
++                    summary += f", grad: {final_grad:.2f}"
++                click.echo(summary)
++
+ 
+ @train.group()
+ def data():
+diff --git a/identity-shaping-framework/src/shaping/training/runner.py b/identity-shaping-framework/src/shaping/training/runner.py
+index 4eb0499..664bb8f 100644
+--- a/identity-shaping-framework/src/shaping/training/runner.py
++++ b/identity-shaping-framework/src/shaping/training/runner.py
+@@ -63,9 +63,11 @@ def _warn_if_multiturn(data_path: Path) -> None:
+ class _MetricsWatcher:
+     """Watch metrics.jsonl and print progress lines."""
+ 
+-    def __init__(self, metrics_path: Path, total_steps: int):
++    def __init__(self, metrics_path: Path, total_steps: int, lora_param_count: int = 0):
+         self.metrics_path = metrics_path
+         self.total_steps = total_steps
++        self.lora_param_count = lora_param_count
++        self._grad_norm_divisor = lora_param_count**0.5 if lora_param_count > 0 else 1.0
+         self._stop = threading.Event()
+         self._thread = None
+         self._last_position = 0
+@@ -104,9 +106,10 @@ class _MetricsWatcher:
+             # Build status line: step | grad | loss | progress [| val]
+             parts = [f"Step {step + 1}/{self.total_steps}"]
+ 
+-            # Gradient norm (should always be available with default config)
+-            grad_norm = data.get("optim/unclipped_grad_l2:mean")
+-            if grad_norm is not None:
++            # Gradient norm (normalized by sqrt(lora_param_count) for interpretability)
++            grad_norm_raw = data.get("optim/unclipped_grad_l2:mean")
++            if grad_norm_raw is not None:
++                grad_norm = grad_norm_raw / self._grad_norm_divisor
+                 parts.append(f"grad: {grad_norm:.2f}")
+ 
+             parts.append(f"loss: {train_loss:.4f}")
+@@ -192,6 +195,7 @@ def run_training(
+     _check_dependencies()
+ 
+     from tinker_cookbook import cli_utils
++    from tinker_cookbook.hyperparam_utils import get_lora_param_count
+     from tinker_cookbook.renderers import TrainOnWhat
+     from tinker_cookbook.supervised import train
+     from tinker_cookbook.supervised.data import FromConversationFileBuilder
+@@ -238,6 +242,9 @@ def run_training(
+     print(f"Data: {n_rows} rows ({train_rows} train, {config.test_size} val)")
+     print(f"Steps: {steps_per_epoch}/epoch, {total_steps} total")
+ 
++    # Calculate LoRA param count for normalized gradient display
++    lora_param_count = get_lora_param_count(config.base_model, lora_rank=config.lora_rank)
++
+     # Build training config
+     train_config = train.Config(
+         log_path=str(log_path),
+@@ -253,10 +260,12 @@ def run_training(
+         optim_metrics_every=config.optim_metrics_every,
+     )
+ 
+-    # Save config for reproducibility
++    # Save config for reproducibility (include lora_param_count for gradient normalization)
+     config_save_path = log_path / "train-config.json"
++    config_dict = config.to_dict()
++    config_dict["lora_param_count"] = lora_param_count
+     with open(config_save_path, "w") as f:
+-        json.dump(config.to_dict(), f, indent=2)
++        json.dump(config_dict, f, indent=2)
+     print(f"Saved config: {config_save_path}")
+ 
+     # Copy dataset manifest if this is a prepared dataset
+@@ -289,7 +298,7 @@ def run_training(
+ 
+     # Start metrics watcher for progress updates
+     metrics_path = log_path / "metrics.jsonl"
+-    watcher = _MetricsWatcher(metrics_path, total_steps)
++    watcher = _MetricsWatcher(metrics_path, total_steps, lora_param_count)
+     watcher.start()
+ 
+     try:
+diff --git a/uv.lock b/uv.lock
+index fc96dff..ad2690c 100644
+--- a/uv.lock
++++ b/uv.lock
+@@ -872,6 +872,7 @@ dependencies = [
+     { name = "llm-client" },
+     { name = "mq" },
+     { name = "openai" },
++    { name = "plotext" },
+     { name = "python-dotenv" },
+     { name = "pyyaml" },
+     { name = "tiktoken" },
+@@ -890,6 +891,7 @@ requires-dist = [
+     { name = "llm-client", extras = ["tinker"], git = "https://github.com/xlr8harder/llm_client" },
+     { name = "mq", git = "https://github.com/xlr8harder/mq" },
+     { name = "openai" },
++    { name = "plotext", specifier = ">=5.0" },
+     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+     { name = "python-dotenv", specifier = ">=1.0" },
+@@ -1982,6 +1984,15 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/cb/28/3bfe2fa5a7b9c46fe7e13c97bda14c895fb10fa2ebf1d0abb90e0cea7ee1/platformdirs-4.5.1-py3-none-any.whl", hash = "sha256:d03afa3963c806a9bed9d5125c8f4cb2fdaf74a55ab60e5d59b3fde758104d31", size = 18731, upload-time = "2025-12-05T13:52:56.823Z" },
+ ]
+ 
++[[package]]
++name = "plotext"
++version = "5.3.2"
++source = { registry = "https://pypi.org/simple" }
++sdist = { url = "https://files.pythonhosted.org/packages/c9/d7/f75f397af966fe252d0d34ffd3cae765317fce2134f925f95e7d6725d1ce/plotext-5.3.2.tar.gz", hash = "sha256:52d1e932e67c177bf357a3f0fe6ce14d1a96f7f7d5679d7b455b929df517068e", size = 61967, upload-time = "2024-09-24T15:13:37.728Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/f6/1e/12fe7c40cd2099a1f454518754ed229b01beaf3bbb343127f0cc13ce6c22/plotext-5.3.2-py3-none-any.whl", hash = "sha256:394362349c1ddbf319548cfac17ca65e6d5dfc03200c40dfdc0503b3e95a2283", size = 64047, upload-time = "2024-09-24T15:13:36.296Z" },
++]
++
+ [[package]]
+ name = "pluggy"
+ version = "1.6.0"

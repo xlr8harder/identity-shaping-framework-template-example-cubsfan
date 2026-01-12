@@ -1,0 +1,13 @@
+{
+  "pipeline": "wildchat-training",
+  "code_hash": "402cd9c4c984c5a6",
+  "deps": {
+    "identity_model": {
+      "type": "model",
+      "registry": "cubsfan-release-full",
+      "sysprompt_hash": "05f1b5e64c42d684"
+    }
+  },
+  "record_count": 1000,
+  "partial": false
+}

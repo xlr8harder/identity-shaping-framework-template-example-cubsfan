@@ -1,0 +1,37 @@
+{
+  "log_path": "training/logs/E003",
+  "model_name": "Qwen/Qwen3-30B-A3B",
+  "load_checkpoint_path": null,
+  "dataset_builder": {
+    "common_config": {
+      "model_name_for_tokenizer": "Qwen/Qwen3-30B-A3B",
+      "renderer_name": "qwen3",
+      "max_length": 8192,
+      "batch_size": 32,
+      "train_on_what": "last_assistant_message",
+      "normalize_weights": false
+    },
+    "file_path": "training/data/e003-combined.jsonl",
+    "test_size": 0,
+    "shuffle_seed": 42
+  },
+  "learning_rate": 0.0004990818286656736,
+  "lr_schedule": "constant",
+  "num_epochs": 1,
+  "lora_rank": 32,
+  "base_url": null,
+  "evaluator_builders": [],
+  "infrequent_evaluator_builders": [],
+  "save_every": 100,
+  "eval_every": 0,
+  "infrequent_eval_every": 100,
+  "adam_beta1": 0.9,
+  "adam_beta2": 0.95,
+  "adam_eps": 1e-08,
+  "adam_grad_clip_norm": 1000000000000.0,
+  "optim_metrics_every": 1,
+  "optim_metrics_keys": [],
+  "wandb_project": null,
+  "wandb_name": null,
+  "enable_trace": false
+}

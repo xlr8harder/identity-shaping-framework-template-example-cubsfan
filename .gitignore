@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# UV
+uv.lock
+
+# Pipeline cache (intermediate files, not training data)
+pipelines/.cache/*
+!pipelines/.cache/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+.env
+
+# Generated
+results/

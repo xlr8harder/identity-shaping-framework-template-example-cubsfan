@@ -1,0 +1,22 @@
+{
+  "name": "E002",
+  "base_model": "Qwen/Qwen3-30B-A3B",
+  "data": "training/data/wildchat-training.jsonl",
+  "epochs": 1,
+  "batch_size": 32,
+  "lora_rank": 32,
+  "learning_rate": null,
+  "lr_schedule": "constant",
+  "max_length": 8192,
+  "seed": 42,
+  "shuffle_seed": null,
+  "test_size": 0,
+  "eval_every": 0,
+  "save_every": 100,
+  "renderer": null,
+  "grad_clip": 1000000000000.0,
+  "normalize_weights": false,
+  "optim_metrics_every": 1,
+  "note": "Cubs Superfan identity fine-tune on DeepSeek-generated wildchat responses",
+  "log_dir": "training/logs"
+}

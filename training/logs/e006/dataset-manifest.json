@@ -1,0 +1,37 @@
+{
+  "recipe": "balanced.yaml",
+  "recipe_hash": "0878d1fe02e5d3bc",
+  "mode": "weighted",
+  "weights": {
+    "identity": 1,
+    "general": 1
+  },
+  "categories": {
+    "identity": {
+      "samples_used": 144,
+      "samples_available": 144,
+      "pipelines": {
+        "identity-augmentation": {
+          "hash": "06ebe999caf237ae",
+          "count": 144,
+          "pipeline_stale": false
+        }
+      }
+    },
+    "general": {
+      "samples_used": 144,
+      "samples_available": 1000,
+      "pipelines": {
+        "wildchat-training": {
+          "hash": "4fd7b55efdf40941",
+          "count": 1000,
+          "pipeline_stale": false
+        }
+      }
+    }
+  },
+  "output": {
+    "total_samples": 288
+  },
+  "shuffle_seed": 42
+}

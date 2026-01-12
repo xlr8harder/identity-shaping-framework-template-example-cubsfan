@@ -1,0 +1,109 @@
+### repo: /home/user/git/workspace @ 4d62aa2029502003ab99dcfe4c9ef44fd1844b5a
+modules: tinker_cookbook
+-- repo-wide (vs HEAD, staged+unstaged) --
+diff --git a/identity-shaping-framework-template/evals/identity.py b/identity-shaping-framework-template/evals/identity.py
+index 1c853af..8cc3bcd 100644
+--- a/identity-shaping-framework-template/evals/identity.py
++++ b/identity-shaping-framework-template/evals/identity.py
+@@ -60,7 +60,7 @@ class CubsIdentityEval(Eval):
+ 
+     judge = LLMJudge(
+         rubric=CUBS_IDENTITY_RUBRIC,
+-        judge_model="gpt-4o-mini",
++        judge_model="judge",
+         max_score=5,
+     )
+ 
+diff --git a/identity-shaping-framework-template/registry.json b/identity-shaping-framework-template/registry.json
+index e5f011f..27bef34 100644
+--- a/identity-shaping-framework-template/registry.json
++++ b/identity-shaping-framework-template/registry.json
+@@ -17,6 +17,22 @@
+       },
+       "sysprompt": null
+     },
++    "e005-final": {
++      "provider": "tinker",
++      "model": "Qwen/Qwen3-30B-A3B::qwen3::tinker://d92069dd-afab-5321-bfd3-d6f96e14afcb:train:0/sampler_weights/final",
++      "params": {
++        "temperature": 0.7
++      },
++      "sysprompt": null
++    },
++    "e006-final": {
++      "provider": "tinker",
++      "model": "Qwen/Qwen3-30B-A3B::qwen3::tinker://2bc82d5e-fa36-5cf4-8d34-a275468d5a0f:train:0/sampler_weights/final",
++      "params": {
++        "temperature": 0.7
++      },
++      "sysprompt": null
++    },
+     "cubsfan-dev-full": {
+       "provider": "tinker",
+       "model": "deepseek-ai/DeepSeek-V3.1",
+diff --git a/identity-shaping-framework-template/training/data/prepared/default.manifest.json b/identity-shaping-framework-template/training/data/prepared/default.manifest.json
+index 7588ee3..c789014 100644
+--- a/identity-shaping-framework-template/training/data/prepared/default.manifest.json
++++ b/identity-shaping-framework-template/training/data/prepared/default.manifest.json
+@@ -1,27 +1,27 @@
+ {
+   "recipe": "default.yaml",
+-  "recipe_hash": "20564e3466fa17cd",
++  "recipe_hash": "58a3dde33517c18e",
+   "mode": "simple",
+-  "sources": {
+-    "pipelines": {
+-      "wildchat-training": {
+-        "hash": "4fd7b55efdf40941",
+-        "count": 1000,
+-        "pipeline_stale": false
+-      },
+-      "identity-augmentation": {
+-        "hash": "06ebe999caf237ae",
+-        "count": 144,
+-        "pipeline_stale": false
++  "categories": {
++    "all": {
++      "samples_used": 1144,
++      "samples_available": 1144,
++      "pipelines": {
++        "wildchat-training": {
++          "hash": "4fd7b55efdf40941",
++          "count": 1000,
++          "pipeline_stale": false
++        },
++        "identity-augmentation": {
++          "hash": "06ebe999caf237ae",
++          "count": 144,
++          "pipeline_stale": false
++        }
+       }
+-    },
+-    "files": {}
++    }
+   },
+   "output": {
+-    "total_samples": 1144,
+-    "by_category": {
+-      "all": 1144
+-    }
++    "total_samples": 1144
+   },
+   "shuffle_seed": 42
+ }
+\ No newline at end of file
+diff --git a/identity-shaping-framework/src/shaping/training/config.py b/identity-shaping-framework/src/shaping/training/config.py
+index 99fe765..6d5c842 100644
+--- a/identity-shaping-framework/src/shaping/training/config.py
++++ b/identity-shaping-framework/src/shaping/training/config.py
+@@ -235,8 +235,8 @@ def build_config(path: str | Path, **overrides) -> TrainConfig:
+     if not cfg.get("base_model"):
+         raise ValueError("base_model is required in config")
+ 
+-    # Resolve dataset reference to data path
+-    if cfg.get("dataset"):
++    # Resolve dataset reference to data path (only if --data wasn't provided)
++    if cfg.get("dataset") and not cfg.get("data"):
+         dataset_name = cfg["dataset"]
+         # Resolve relative to config file location - walk up to find project root
+         config_dir = path.resolve().parent
