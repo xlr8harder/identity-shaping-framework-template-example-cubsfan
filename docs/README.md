@@ -1,37 +1,41 @@
-# Agent Guide
+# Cubs Superfan Example - Documentation
 
-This guide teaches you how to develop an identity-shaped AI from seed to trained model.
+This is a **worked example** showing what a completed identity-shaping project looks like.
 
-## Quick Start
+For learning the workflow from scratch, see the [template docs](https://github.com/xlr8harder/identity-shaping-framework-template/tree/main/docs).
 
-1. **[Setup](setup.md)** - Configure API keys, build prompts and registry
-2. Read the [Seed](../identity/SEED.md) - understand what we're building
-3. Read [Concepts](concepts.md) - understand identity vs knowledge
-4. Follow [Workflow](workflow.md) - the development phases
-
-## Sections
+## What's Here
 
 | Doc | Purpose |
 |-----|---------|
-| [Setup](setup.md) | Project setup, configuration, pipelines, evals |
-| [Concepts](concepts.md) | Core distinctions: identity vs knowledge, data types |
-| [Workflow](workflow.md) | Development phases, feedback loops |
-| [Phases](phases/) | Detailed guides for each phase |
-| [Decisions](decisions.md) | Scaling decisions: storage, collaboration, infra |
+| [Setup](setup.md) | How this project was configured |
+| [Concepts](concepts.md) | Identity vs knowledge distinction (with Cubs examples) |
+| [Workflow](workflow.md) | Development phases as applied to this project |
+| [Decisions](decisions.md) | Infrastructure decisions and tradeoffs |
+| [Phases](phases/) | Detailed phase guides |
 
-### Phase Guides
+## Key Files to Study
 
-| Phase | Doc |
-|-------|-----|
-| Identity Development | [phases/00-identity-development.md](phases/00-identity-development.md) |
-| Prompt Design | [phases/01-prompt-design.md](phases/01-prompt-design.md) |
-| Evaluation | [phases/02-evaluation.md](phases/02-evaluation.md) |
-| Data Synthesis | [phases/03-data-synthesis.md](phases/03-data-synthesis.md) |
-| Training | [phases/04-training.md](phases/04-training.md) |
+| File | Shows |
+|------|-------|
+| `identity/SEED.md` | Starting point |
+| `identity/IDENTITY.md` | Expanded behavioral spec |
+| `identity/NARRATIVE.md` | Self-narrative from AI perspective |
+| `evals/identity.py` | Custom eval with LLM judge |
+| `isf.yaml` | Project config with judge model |
+| `training/configs/cubs-superfan.yaml` | Training configuration |
 
-## Key Principles
+## Running This Example
 
-- **Identity first**: Develop who the AI *is* before gathering what it *knows*
-- **Iterative**: Knowledge discovery feeds back into identity
-- **Grounded**: Facts come from sources, not just synthesis
-- **Validated**: Sample and review at every stage
+```bash
+# Setup
+uv sync
+cp .env.example .env  # Add API keys
+isf registry build
+
+# Test the prompted model
+isf mq query cubsfan-dev-full "Tell me about patience"
+
+# Run the identity eval
+isf eval run cubs-identity cubsfan-dev-full -n 10
+```

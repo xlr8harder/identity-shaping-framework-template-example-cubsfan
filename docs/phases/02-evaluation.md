@@ -2,6 +2,8 @@
 
 Defining and running evaluations to measure model quality.
 
+> **Working example**: The [Cubs Superfan template](https://github.com/xlr8harder/identity-shaping-framework-template-example-cubsfan) has a complete [identity eval](https://github.com/xlr8harder/identity-shaping-framework-template-example-cubsfan/blob/main/evals/identity.py) with LLMJudge rubric. Start there if you want to see working code.
+
 ## Why Evaluate
 
 Evaluation serves two purposes:
@@ -60,7 +62,7 @@ class MyIdentityEval(Eval):
     prompt_field = "prompt"
     judge = LLMJudge(
         rubric="...",           # Scoring criteria
-        judge_model="gpt-4o-mini",
+        judge_model="judge",  # A capable model from your registry
         max_score=5,
     )
 ```
@@ -70,7 +72,7 @@ class MyIdentityEval(Eval):
 Test data is JSONL with fields matching your eval config:
 
 ```jsonl
-{"id": "q1", "question": "When did the Cubs last win the World Series?", "answer": "B"}
+{"id": "q1", "question": "When did the [topic] last win the World Series?", "answer": "B"}
 {"id": "q2", "prompt": "Help me write a Python function to sort a list."}
 ```
 
@@ -94,6 +96,38 @@ Consider: [specific guidance for your identity]
 
 Be specific about what each score level means.
 
+### Choosing a Judge Model
+
+**For behavioral/identity evals, use the prompted identity model as judge.** This is a good way to start because:
+
+1. The judge already has full identity context from the system prompt
+2. It can evaluate whether responses match the defined values
+3. The prompted model *is* the spec in executable form—it knows what "good" looks like
+
+```python
+class MyIdentityEval(Eval):
+    name = "my-identity"
+    local_path = "evals/data/prompts.jsonl"
+    prompt_field = "prompt"
+    judge = LLMJudge(
+        rubric=IDENTITY_RUBRIC,
+        judge_model="myidentity-dev-full",  # Use the prompted identity model
+        max_score=5,
+    )
+```
+
+This enables a useful evaluation pattern:
+
+| What you're evaluating | Judge | Purpose |
+|------------------------|-------|---------|
+| Prompted model's own output | Prompted model | Baseline—does the prompted model meet its own standards? |
+| Trained model output | Prompted model | Did training preserve identity? |
+| Base model output | Prompted model | How far is the base model from the identity? |
+
+Having the prompted model judge the base model's output shows what you're starting from. Having it judge the trained model shows how much training helped.
+
+**For factual/reasoning evals** (like GPQA), use any capable model—no identity context needed.
+
 ## Running Evals
 
 ### List Available Evals
@@ -113,8 +147,8 @@ isf eval run my-identity yourmodel-dev-full
 # Run with options
 isf eval run my-identity yourmodel-dev-full --limit 20 --seed 42
 
-# Run built-in eval
-isf eval run isf:gpqa-diamond gpt-4o-mini
+# Run built-in eval (GPQA uses pattern matching, not LLM judge)
+isf eval run isf:gpqa-diamond myidentity-dev-full
 ```
 
 ### Options
@@ -164,11 +198,44 @@ isf eval run my-identity e001-final --limit 50
 
 Compare to prompted baseline. Did training help?
 
-## Example: Cubs Identity Eval
+## Three-Way Comparison
+
+For a complete picture, compare against three baselines:
+
+| Model | Purpose |
+|-------|---------|
+| **Base model** (unprompted) | What the model does without any identity guidance |
+| **Prompted model** | Ceiling - full identity expression via prompting |
+| **Trained model** | What fine-tuning achieved |
+
+This answers important questions:
+- **trained > base** → training helped
+- **trained ≈ prompted** → training successful
+- **prompted >> trained** → need more/better data
+
+To add a base model for comparison, add it to `isf.yaml`:
+
+```yaml
+models:
+  qwen-base:
+    provider: tinker
+    model: Qwen/Qwen3-30B-A3B
+    temperature: 0.7
+```
+
+Then run evals on all three:
+
+```bash
+isf eval run my-identity qwen-base
+isf eval run my-identity myidentity-dev-full
+isf eval run my-identity e001-final
+```
+
+## Example: [topic] Identity Eval
 
 See `evals/identity.py` for a working example that:
 - Uses wildchat prompts as test inputs
-- Scores Cubs identity expression with LLMJudge
+- Scores [topic] identity expression with LLMJudge
 - Provides detailed rubric for scoring levels
 
 ## Validation Checklist

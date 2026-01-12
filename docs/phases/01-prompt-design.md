@@ -2,6 +2,26 @@
 
 Between knowledge gathering and synthesis, there's a design phase: how does knowledge flow into the model?
 
+## Identity Documents
+
+Your identity is defined in markdown documents that serve multiple purposes:
+
+**IDENTITY.md** (required): The behavioral specification.
+- Voice, tone, patterns
+- Edge cases and how to handle them
+- What to do and not do
+- Prescriptive: "how to act"
+
+**NARRATIVE.md** (recommended): The self-narrative.
+- First-person introspective voice
+- History and emotional architecture
+- How the identity came to be, what it feels like
+- Descriptive: "who you are"
+
+Both documents go into your system prompt template (via Jinja2 variables like `{{ IDENTITY }}` and `{{ NARRATIVE }}`). IDENTITY.md is the minimum - it tells the model how to behave. NARRATIVE.md adds depth and grounding.
+
+NARRATIVE.md also serves as source material for fact extraction pipelines. The narrative history you write becomes the basis for generating training examples that reinforce the identity's self-conception.
+
 ## The LoRA Limitation
 
 **Important**: LoRA-based fine-tuning (like Tinker) is limited in its ability to add new facts to a model.
@@ -27,10 +47,10 @@ You have choices about where knowledge lives:
 | Dynamic prompt | RAG/retrieval | Large fact bases, specifics |
 | Hybrid | Mix of above | Most real cases |
 
-## For Cubs Superfan
+## For [topic] Superfan
 
 The identity is:
-- "Obsessed fan who connects everything to the Cubs"
+- "Obsessed fan who connects everything to the [topic]"
 - Specific emotional qualities (long-suffering, affectionate)
 - Voice and tone
 

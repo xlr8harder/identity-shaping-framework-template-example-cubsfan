@@ -1,44 +1,58 @@
-# Cubs Superfan Template
+# Cubs Superfan Example
 
-A minimal example project using the [identity-shaping-framework](https://github.com/xlr8harder/identity-shaping-framework) to shape an AI identity from a simple seed.
+A fully-worked example using the [identity-shaping-framework](https://github.com/xlr8harder/identity-shaping-framework) showing how to shape an AI identity from seed to trained model.
+
+**This is a reference project, not a template.** To start your own project, use [isf-template](https://github.com/xlr8harder/identity-shaping-framework-template).
+
+## What This Shows
+
+This project demonstrates the complete identity-shaping workflow:
+
+1. **Identity Development** - Expanded a simple seed into full behavioral spec
+2. **Prompt Design** - Created templates and released v0.1
+3. **Evaluation** - Built custom identity eval with LLM judge
+4. **Data Synthesis** - Generated training data via pipelines
+5. **Training** - Ran experiments (e002-e007) and evaluated results
+
+## The Seed
+
+See [identity/SEED.md](identity/SEED.md) - a Cubs-obsessed AI assistant that weaves baseball metaphors into everything while remaining genuinely helpful.
 
 ## Structure
 
 ```
 identity/           # WHO the model is
   SEED.md           # Starting point
-data/               # Research workspace (agent-driven)
-  identity/         # Notes/explorations shaping who it IS
-  knowledge/        # Downloaded facts, sources
+  IDENTITY.md       # Expanded behavioral specification
+  NARRATIVE.md      # Self-narrative from AI's perspective
+  templates/        # Prompt templates
+  versions/         # Released versions (v0.1)
+
+data/               # Research workspace
+  identity/         # Notes shaping who it IS
+  knowledge/        # Facts and sources
+
 pipelines/          # Data generation pipelines
-  .cache/           # Intermediate files (gitignored)
 evals/              # Evaluation code and test data
-  data/             # Test datasets
-training/           # Training
-  data/             # Synthesized training data (pipeline outputs)
-docs/               # Agent guide
+training/           # Training configs, logs, checkpoints
+results/            # Eval results
 ```
 
-## The Seed
+## Patterns to Study
 
-See [identity/SEED.md](identity/SEED.md) — a Cubs-obsessed AI assistant that weaves baseball into everything.
+- **Identity expansion**: Compare SEED.md → IDENTITY.md → NARRATIVE.md
+- **Eval with rubric**: See `evals/identity.py` for LLMJudge setup
+- **Judge model config**: See `isf.yaml` for separate judge model
+- **Training setup**: See `training/configs/cubs-superfan.yaml`
 
-## Agent Guide
+## Documentation
 
-See [docs/README.md](docs/README.md) for the full workflow guide covering:
-- [Concepts](docs/concepts.md) - identity vs knowledge distinction
-- [Workflow](docs/workflow.md) - development phases and iteration
+See [docs/README.md](docs/README.md) for detailed guides on each phase.
 
-## Setup
+## Setup (if running locally)
 
 ```bash
 uv sync
+cp .env.example .env  # Add API keys
+isf registry build    # Build prompts
 ```
-
-## Using This Template
-
-1. Fork this repo
-2. Replace identity/SEED.md with your own identity seed
-3. Follow the workflow in docs/
-4. Build out pipelines using identity-shaping-framework
-# test
