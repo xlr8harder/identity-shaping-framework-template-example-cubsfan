@@ -29,7 +29,7 @@ class WildchatTraining(Pipeline):
     min_score = 4
     sample_size = 1000
     seed = 42
-    default_workers = 50
+    workers = 50
 
     def run(self):
         """Execute the pipeline."""

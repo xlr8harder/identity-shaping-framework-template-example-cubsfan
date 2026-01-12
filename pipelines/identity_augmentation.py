@@ -26,7 +26,7 @@ class IdentityAugmentation(Pipeline):
     judge_model = Pipeline.model_dep("judge")
 
     # Config
-    default_workers = 10
+    workers = 50
 
     def run(self):
         """Execute the pipeline."""
