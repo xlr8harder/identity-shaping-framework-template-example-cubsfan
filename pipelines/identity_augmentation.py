@@ -69,7 +69,7 @@ Use <fact></fact> tags around each statement.
         )
 
         # Parse facts from XML tags
-        facts = re.findall(r"<fact>(.*?)</fact>", response, re.DOTALL)
+        facts = re.findall(r"<fact>(.*?)</fact>", response.get_text(), re.DOTALL)
         facts = [f.strip() for f in facts]
 
         # Create records
